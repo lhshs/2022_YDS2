@@ -1,0 +1,15 @@
+
+*.zip
+017.뉴스 기사 기계독해 데이터/01.데이터/1.Training/.DS_Store
+017.뉴스 기사 기계독해 데이터/.DS_Store
+017.뉴스 기사 기계독해 데이터/01.데이터/.DS_Store
+017.뉴스 기사 기계독해 데이터/01.데이터/1.Training/라벨링데이터/.DS_Store
+017.뉴스 기사 기계독해 데이터/01.데이터/1.Training/원천데이터/.DS_Store
+017.뉴스 기사 기계독해 데이터/01.데이터/2.Validation/.DS_Store
+017.뉴스 기사 기계독해 데이터/01.데이터/2.Validation/라벨링데이터/.DS_Store
+017.뉴스 기사 기계독해 데이터/01.데이터/2.Validation/원천데이터/.DS_Store
+*.json
+ai-hub/data/validation/.DS_Store
+ai-hub/data/train/.DS_Store
+ai-hub/data/.DS_Store
+ai-hub/.DS_Store
