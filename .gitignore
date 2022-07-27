@@ -13,3 +13,4 @@ ai-hub/data/validation/.DS_Store
 ai-hub/data/train/.DS_Store
 ai-hub/data/.DS_Store
 ai-hub/.DS_Store
+*.csv
