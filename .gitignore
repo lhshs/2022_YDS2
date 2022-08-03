@@ -15,3 +15,4 @@ ai-hub/data/.DS_Store
 ai-hub/.DS_Store
 *.csv
 X_train.pickle
+X_test.pickle
