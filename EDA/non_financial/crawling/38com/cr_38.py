@@ -13,7 +13,7 @@ url_ = 'http://www.38.co.kr/html/forum/board/?o=v&code=389930&no=793&page=15'
 response_ = requests.get(url_)
 
 
-# 원하는 부분 알 수 있게 parcing하기
+# 원하는 부분 알 수 있게 parsing하기
 import bs4
 from bs4 import BeautifulSoup
 # soup = BeautifulSoup(response_.text, 'html.parser')
@@ -89,3 +89,4 @@ def make_df(start, end, code):
     raw_dict['contents'] = contents
     # return raw_dict
     return pd.DataFrame(raw_dict)
+
