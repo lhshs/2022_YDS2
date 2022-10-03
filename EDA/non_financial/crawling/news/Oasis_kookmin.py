@@ -11,9 +11,6 @@ from selenium import webdriver  # 라이브러리(모듈) 가져오라
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver import ActionChains as AC
 
-# tqdm : for문 진행상황 체크
-from tqdm import tqdm, tqdm_notebook
-from tqdm.notebook import tqdm
 
 # 정규표현식(regular expression) : 문자(알파벳,한글), 숫자, 특수기호 정제 및 추출
 import re
