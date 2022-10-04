@@ -138,22 +138,52 @@ def date(_url_=''):
     return date_
 
 
-# 제목 & 링크 & 본문 & 발행일 저장 -> Dataframe화
-def make_df():
-    queue_ = find_naver_news()
-    link_list = find_naver_news()  # 네이버뉴스 URL을 담은 큐
+def make_df():  # 주어진 raw_data를 바탕으로 dataframe을 만듭니다.
+    """
+        make_raw_data()
+            ARGS:
+                None
+            Returns:
+                pd.DataFrame object
+    """
+    def make_raw_data(naver_news=[]):  # 데이터프레임의 column에 들어갈 각 리스트(주소, 제목, 본문, 일자)를 만듭니다.
+        """
+            make_raw_data()
+                ARGS:
+                    naver_news -> 네이버뉴스 마킹된 URL로 구성된 리스트
+                Returns:
+                    None
+        """
+        queue_ = naver_news
+        while queue_:  # 페이지의 모든 기사 제목의 링크를 방문해서 필요한 정보 수지
+            url_q = queue_.popleft()
+            link_list.append(url_q)  # URL 은 바로 넣어도 됩니다.
+            _title = title(url_q)
+            _date = date(url_q)
+            _content = content(url_q)
+            title_list.append(_title)
+            content_list.append(_content)
+            date_list.append(_date)
+        return
+    next_ = []
+    link_list = deque()
     title_list = deque()
     content_list = deque()
     date_list = deque()
-    while queue_:  # 페이지의 모든 기사 제목의 링크를 방문해서 필요한 정보 수지
-        url_q = queue_.popleft()
-        _title = title(url_q)
-        _date = date(url_q)
-        _content = content(url_q)
-        title_list.append(_title)
-        content_list.append(_content)
-        date_list.append(_date)
-    raw_dict = dict()
+    while True:
+        naver_news_list = find_naver_news()  # 네이버뉴스 URL을 담은 큐
+        make_raw_data(naver_news_list)  # raw data 제작,각 리스트에 값들을 넣는 함수
+        next_.extend(driver.find_elements(By.CLASS_NAME, "btn_next"))
+        # 다음 페이지로 넘어가는 버튼을 next_ 리스트에 넣습니다.
+        # find_elements의 return이 리스트이기 때문에 extend사용
+        driver.implicitly_wait(1)  # 1초 대기
+        obj = next_.pop()
+        if obj.get_attribute("aria-disabled") == "false":
+            obj.click()
+        else:
+            print('마지막 페이지 입니다.')
+            break
+    raw_dict = dict()  # 반복문 종 후, 즉 모든 페이지를 넘긴 후 데이터 프레임을 만듭니다.
     raw_dict['titles'] = title_list
     raw_dict['links'] = link_list
     raw_dict['dates'] = date_list
@@ -161,23 +191,7 @@ def make_df():
     return pd.DataFrame(raw_dict)
 
 
-df = make_df()
-df.to_csv("oasis_naver_page1.csv")  # csv로 바꿔서 저장합니다.
+temp = make_df()
+# df = make_df()
+# df.to_csv("oasis_navernews.csv")  # csv로 바꿔서 저장합니다.
 driver.quit()
-
-# 한 페이지에서 해야할 일
-# 각 페이지에서 네이버 뉴스 큐에 넣기
-# URL
-# 제목
-# 일자
-# 본문
-# 다음 페이지로
-
-
-# 다음 페이지 클릭
-# # find_elements로 리스트로 return후 인덱스로 element에 접근
-# driver.implicitly_wait(1)  # 2초 대기
-# next_ = driver.find_elements(By.XPATH, "//*[@id=\"main_pack/\"]/div[2]/div/a[2]")  # 다음 페이지로 넘어가는 버튼 클릭
-# driver.implicitly_wait(1)  # 2초 대기
-# next_.click()
-# # driver.execute_script("arguments[0].click();", next_)  ## JS_Executor로 script 실행
