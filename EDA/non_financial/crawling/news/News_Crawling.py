@@ -11,6 +11,9 @@ from selenium import webdriver  # 라이브러리(모듈) 가져오라
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver import ActionChains as AC
 
+# tqdm : for문 진행상황 체크
+from tqdm import tqdm, tqdm_notebook
+from tqdm.notebook import tqdm
 
 # 정규표현식(regular expression) : 문자(알파벳,한글), 숫자, 특수기호 정제 및 추출
 import re
@@ -98,7 +101,7 @@ media_outlets['한국일보'] = '//*[@id="snb"]/div[2]/ul/li[4]/div/div[2]/div/d
 """
 
 
-def click_press(daily_name='국민일보'):  # daily_name(일간지 명) is str
+def click_press(daily_name='경향신문'):  # daily_name(일간지 명) is str
     """
         click_press('한국일보')
             ARGS:
@@ -110,6 +113,8 @@ def click_press(daily_name='국민일보'):  # daily_name(일간지 명) is str
     driver.implicitly_wait(2)
     driver.execute_script("arguments[0].click();", press[0])  ## JS_Executor로 script 실행
     return driver.current_url  # 현재 페이지의 URL을 가져옵니다.
+
+temp_url = click_press('경향신문')
 
 
 def page_count(url=''):  # 페이지 수 세기
@@ -130,104 +135,61 @@ def page_count(url=''):  # 페이지 수 세기
     return len(a_tags)
 
 
-# 본문 추출 함수(국민일보)
-def content(_url_=''):
+pages_ = page_count(temp_url)
+
+# 필요인자: 각 일간지 이름, 페이지 수
+
+
+# 제목 & 링크 저장
+title_list = deque()
+link_list = deque()
+content_list = deque()
+
+
+# 본문 추출 함수
+def content(url=''):
     """
-          content(url)
+        page_count(url)
             ARGS:
                 url = contents_links.popleft() -> contents_links에 dequeue구조로 한 페이지의 각 기사의 하이퍼링크가 걸려있습니다.
             Returns:
                 각 기사의 본문을 string으로 리턴합니다.
     """
     response = requests.get(_url_, headers={"User-Agent": "Mozilla/5.0"})  # response객체
-    soup = BeautifulSoup(response.content.decode('euc-kr', 'replace'), "html.parser")  # 한글 깨짐 방지 decoding
-    # parsing ,  response객체에서 .text로 html을 추출해서(string) bs4로 parsing합니다.
-    content_texts = soup.select('#articleBody')  # bs4객체의 메소드 select사용, css select에서 id로 찾기 id = articleBody
+    soup = BeautifulSoup(response.text, "html.parser")  # parsing ,  response객체에서 .text로 html을 추출해서(string) bs4로 parsing합니다.
+    content_texts = soup.select('.content_text')  # bs4객체의 메소드 slect사용, css class로 검색할 수 있습니다. class="content_text text-l" 본문 클래스 모두 찾기
     resoup_ = BeautifulSoup(str(content_texts), "html.parser")  # 다시 parsing
     return resoup_.get_text()  # 사람이 읽을 수 있는 글자만 추출
 
+# 현재 페이지(1페이지)에서 모든 기사 하이퍼링크 찾기
+contents_links = deque()
+titles = driver.find_elements('css selector', 'a.news_tit')   # 페이지 각 기사 제목별로 하이퍼링크가 걸려있습니다.
+for i, v in enumerate(titles):
+    contents_links.append(v.get_attribute('href'))  # 각 하이퍼링크 순서로 queue에 넣기
+## -> 여기서 부터 작업
+# while contents_links:  # 각 링크 별로 파싱해서, 경향신문에서
+# _url_ = contents_links.popleft()
+# link_list.append(_url_)
+# rp = requests.get(_url_, headers={"User-Agent": "Mozilla/5.0"})  # response객체
+# sp = BeautifulSoup(rp.text, "html.parser")  # parsing ,  response객체에서 .text로 html을 추출해서(string) bs4로 parsing합니다.
+# content_texts = sp.select('.content_text')  # bs4객체의 메소드 slect사용, css class로 검색할 수 있습니다. class="content_text text-l" 본문 클래스 모두 찾기
+# resoup_ = BeautifulSoup(str(content_texts), "html.parser")  # 다시 parsing
+# readable_content_text = resoup_.get_text()  # 사람이 읽을 수 있는 글자만 추출
+# content_list.append(readable_content_text)
 
-# 제목 추출 함수(국민일보)
-def title(_url_=''):
-    """
-        title(url)
-            ARGS:
-                url = contents_links.popleft() -> contents_links에 dequeue구조로 한 페이지의 각 기사의 하이퍼링크가 걸려있습니다.
-            Returns:
-                각 기사의 제목을 string으로 리턴합니다.
-    """
-    response = requests.get(_url_, headers={"User-Agent": "Mozilla/5.0"})  # response객체
-    soup = BeautifulSoup(response.content.decode('euc-kr', 'replace'), "html.parser")  # 한글 깨짐 방지 decoding
-    # parsing ,  response객체에서 .text로 html을 추출해서(string) bs4로 parsing합니다.
-    head_line = soup.select('h3')  # bs4객체의 메소드 slect사용, tag로 검색할 수 있습니다. tag=<h3> 제목 클래스 모두 찾기
-    resoup_ = BeautifulSoup(str(head_line), "html.parser")  # 다시 parsing
-    return resoup_.get_text()  # 사람이 읽을 수 있는 글자만 추출
-
-
-# 기사 입력 날짜 추출(국민일보)
-def date(_url_=''):
-    """
-        title(url)
-            ARGS:
-                url = contents_links.popleft() -> contents_links에 dequeue구조로 한 페이지의 각 기사의 하이퍼링크가 걸려있습니다.
-            Returns:
-                각 기사의 날짜를 string으로 리턴합니다.
-    """
-    response = requests.get(_url_, headers={"User-Agent": "Mozilla/5.0"})  # response객체
-    soup = BeautifulSoup(response.content.decode('euc-kr', 'replace'), "html.parser")  # 한글 깨짐 방지 decoding
-    # parsing ,  response객체에서 .text로 html을 추출해서(string) bs4로 parsing합니다.
-    head_line = soup.select_one('.t11')  # bs4객체의 메소드 slect사용, css class로 검색할 수 있습니다. class = t11 입력날짜를 추출합니다.
-    resoup_ = BeautifulSoup(str(head_line), "html.parser")  # 다시 parsing
-    date_ = resoup_.get_text()  # 사람이 읽을 수 있는 글자만 추출
-    return date_
-
-
-# url 그대로 return 하는 함수
-def link_url(_url_=''):
-    return _url_
-
-
-# 제목 & 링크 & 본문 & 발행일 저장 -> Dataframe화
-def make_df():
-    contents_links = deque()  # 현재 페이지(1페이지)에서 모든 기사 하이퍼링크 찾기
-    titles = driver.find_elements('css selector', 'a.news_tit')  # 페이지 각 기사 제목별로 하이퍼링크가 걸려있습니다.
-    for i, v in enumerate(titles):
-        contents_links.append(v.get_attribute('href'))  # 각 하이퍼링크 순서로 queue에 넣기
-    title_list = deque()
-    link_list = deque()
-    content_list = deque()
-    date_list = deque()
-    while contents_links:  # 페이지의 모든 기사 제목의 링크를 방문해서 필요한 정보 수지
-        url_q = contents_links.popleft()
-        _title = title(url_q)
-        _link = link_url(url_q)
-        _date = date(url_q)
-        _content = content(url_q)
-        title_list.append(_title)
-        link_list.append(_link)
-        content_list.append(_content)
-        date_list.append(_date)
-    raw_dict = dict()
-    raw_dict['titles'] = title_list
-    raw_dict['links'] = link_list
-    raw_dict['dates'] = date_list
-    raw_dict['contents'] = content_list
-    return pd.DataFrame(raw_dict)
-
-
-press_url = click_press('국민일보')  # 국민일보 클릭
-pages_ = page_count(press_url)  # 국민일보의 페이지 수 Return
-
-
-total = dict()  # 페이지별로 딕셔너리의 Value로 저장하였습니다.
-for _ in range(pages_):
-    total[_] = make_df()
-    driver.find_element("css selector", 'a.btn_next').click()   # 다음 페이지 클릭
-
-result_df = pd.DataFrame()  # 딕셔너리의 Value로 각 페이지별 데이터프레임을 합쳤습니다.
-for _ in range(pages_):
-    result_df = result_df.append(total[_])
-
-result_df.to_csv("oasis_kookmin.csv")  # csv로 바꿔서 저장합니다.
-
-
+#     temp_list = deque()
+#     for title in titles:
+#         href = title.get_attribute('href')
+#         temp_list.append(title.text)
+#         temp_list = [x for x in temp_list]
+#
+#         link_list.append(href)
+#     title_list = title_list + temp_list
+#
+#     # 다음 페이지 클릭
+#     driver.find_element("css selector", 'a.btn_next').click()
+#
+# print(title_list)
+# print(link_list)
+#
+# driver.quit()
