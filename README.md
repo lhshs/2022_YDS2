@@ -18,7 +18,7 @@
 
 혁신의 숲(https://www.innoforest.co.kr/) 사이트에서 ‘오아시스마켓’의 주식 관련 기업 데이터를 feature로 추가
 
-KOSIS(https://kosis.kr/index/index.do) 페이지를 통해 경제종합지수, 경제심리지수, 소비지수, 물가지수, 심리지수 등의  월별 데이터를 가져와서 feature로 추가
+KOSIS(https://kosis.kr/index/index.do)를 통해 경제종합지수, 경제심리지수, 소비지수, 물가지수, 심리지수 등의 월별 데이터를 가져와서 feature로 추가
 
 KRX 정보데이터시스템(https://data.krx.co.kr/contents/MDC/MAIN/main/index.cmd) 에서 코스피 관련 데이터를 feature로 추가
 
@@ -47,7 +47,7 @@ Feature Importance를 계산하여 예측모델에 중요하게 작용한 featur
 
 **<2차 Feature Selection>**
 
-<img width="803" alt="image" src="https://user-images.githubusercontent.com/104045973/196935590-452edd6c-3989-4863-8a3d-cd6eb947da14.png">
+<img width="758" alt="image" src="https://user-images.githubusercontent.com/104045973/196938180-4304a8fd-3e99-4cfa-b973-6c068c1e719c.png">
 
 
 남은 feature와 추가한 이동평균선, 추세선, 계절성에 대한 Feature만 놓고 다시 XGBoost를 돌린 상황이다. MAE값은 개선 되었지만, NMAE 값이 산출되지 않는다.
